@@ -1,7 +1,8 @@
 { lib, fetchFromGitHub
 , callPackage
 , ffmpeg
-, ffmpegVariant ? "small"
+, ffmpegVariant ? "small",
+...
 }:
 
 let
