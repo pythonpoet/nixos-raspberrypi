@@ -5,16 +5,16 @@ self: super: { # final: prev:
   # https://github.com/raspberrypi/firmware/commits/stable/
 
   # see `extra/git_hash` for a matching hash of the `raspberrypi/linux`
-  raspberrypifw_20250916 = super.raspberrypifw.overrideAttrs (old: {
-    # this release is untagged in the upstream for linux 6.12.47
-    version = "stable_20250916";
-    src = super.fetchFromGitHub {
-      owner = "raspberrypi";
-      repo = "firmware";
-      rev = "${version}";
-      hash = "";
-    };
-  });
+  # raspberrypifw_20250916 = super.raspberrypifw.overrideAttrs (old: {
+  #   # this release is untagged in the upstream for linux 6.12.47
+  #   version = "stable_20250916";
+  #   src = super.fetchFromGitHub {
+  #     owner = "raspberrypi";
+  #     repo = "firmware";
+  #     rev = "${version}";
+  #     hash = "";
+  #   };
+  # });
 
   raspberrypifw_20250829 = super.raspberrypifw.overrideAttrs (old: {
     # this release is untagged in the upstream for linux 6.12.44
