@@ -53,7 +53,7 @@ let
   linux_v6_12_47_argsOverride = {
     modDirVersion = "6.12.47";
     tag = "stable_20250916";
-    srcHash = "";
+    srcHash = "sha256-HG8Oc04V2t54l0SOn4gKmNJWQUrZfjWusgKcWvx74H0=";
     fixupStructuredConfig = let 
       common = with pkgs.lib.kernel; {
         NET_CLS_BPF = mkKernelOverride yes ; # =module in nixos;
