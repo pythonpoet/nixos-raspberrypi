@@ -31,6 +31,12 @@ in self: super: {
 
     { latest = self.linuxAndFirmware.v6_12_44; }
 
+    (mkBundle self "v6_12_47" {
+      fw = self.raspberrypifw_20250916;
+      wFw = self.raspberrypiWirelessFirmware_20250408;
+    })
+
+
     (mkBundle self "v6_12_44" {
       fw = self.raspberrypifw_20250829;
       wFw = self.raspberrypiWirelessFirmware_20250408;

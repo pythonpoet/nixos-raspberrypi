@@ -50,6 +50,28 @@ let
   };
 
   # Linux
+  linux_v6_12_47_argsOverride = {
+    modDirVersion = "6.12.47";
+    tag = "stable_20250916";
+    srcHash = "";
+    fixupStructuredConfig = let 
+      common = with pkgs.lib.kernel; {
+        NET_CLS_BPF = mkKernelOverride yes ; # =module in nixos;
+
+        PREEMPT = mkKernelOverride yes;
+        # override what nixos sets in `linux/kernel/preempt.common-config.nix`
+        PREEMPT_VOLUNTARY = mkKernelOverride no;
+        ARM64_16K_PAGES = no;
+      };
+      in {
+      bcm2711.aarch64 = common // {
+        # LOCALVERSION = "-v8" ; # ="" in nixos;
+      };
+      bcm2712.aarch64 = common // {
+        # LOCALVERSION = "-v8-16k" ; # ="" in nixos;
+      };
+    };
+  };
 
   linux_v6_12_44_argsOverride = {
     modDirVersion = "6.12.44";
@@ -102,6 +124,7 @@ let
         NFS_V4 = yes ; # =module in nixos;
         NLS_CODEPAGE_437 = mkKernelOverride yes ; # =module in nixos;
         ROOT_NFS = yes;
+        
         # UEVENT_HELPER = yes;
         # UNICODE = module; # =y in nixos
         # USB_SERIAL = module ; # =yes in nixos;
@@ -219,6 +242,7 @@ let
     ];
   };
 in {
+  "6_12_47" = linux_v6_12_47_argsOverride;
   "6_12_44" = linux_v6_12_44_argsOverride;
   "6_12_34" = linux_v6_12_34_argsOverride;
   "6_12_25" = linux_v6_12_25_argsOverride;
