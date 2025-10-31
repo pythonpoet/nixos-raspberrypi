@@ -1,20 +1,30 @@
-self: super: {
-  # see also
-  # https://github.com/NixOS/nixpkgs/blob/nixos-unstable/pkgs/misc/uboot/default.nix#L494
-  # https://source.denx.de/u-boot/u-boot
-  # https://github.com/u-boot/u-boot/
+sself: super: {
+  # U-Boot for Raspberry Pi 64-bit as EFI application
   ubootRaspberryPi_64bit = super.buildUBoot rec {
     defconfig = "rpi_arm64_defconfig";
     extraMeta.platforms = [ "aarch64-linux" ];
-    filesToInstall = [ "u-boot.bin" ];
-    # version = "2024.04";
-    # src = super.fetchFromGitHub {
-    #   owner = "u-boot";
-    #   repo = "u-boot";
-    #   rev = "v${version}";
-    #   hash = super.fakeHash;
-    # };
+    
+    # EFI-specific configuration
+    extraConfig = ''
+      CONFIG_EFI_LOADER=y
+      CONFIG_CMD_BOOTEFI=y
+      CONFIG_EFI_VARIABLE_FILE_STORE=y
+      CONFIG_EFI_GET_TIME=y
+      CONFIG_EFI_RUNTIME_UPDATE_CAPSULE=y
+      CONFIG_EFI_DEVICE_PATH_TO_TEXT=y
+      CONFIG_EFI_UNICODE_COLLATION_PROTOCOL2=y
+      CONFIG_EFI_LOADER_HII=y
+    '';
+    
+    # Install both traditional and EFI versions
+    filesToInstall = [ "u-boot.bin" "u-boot.efi" ];
+    
+    # Build EFI version
+    postBuild = ''
+      make u-boot.efi
+    '';
   };
+
 
   uefi_rpi3 = super.fetchzip {
     url = "https://github.com/pftf/RPi3/releases/download/v1.39/RPi3_UEFI_Firmware_v1.39.zip";
