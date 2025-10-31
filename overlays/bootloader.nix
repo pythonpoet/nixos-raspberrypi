@@ -4,25 +4,12 @@ sself: super: {
     defconfig = "rpi_arm64_defconfig";
     extraMeta.platforms = [ "aarch64-linux" ];
     
-    # EFI-specific configuration
-    extraConfig = ''
-      CONFIG_EFI_LOADER=y
-      CONFIG_CMD_BOOTEFI=y
-      CONFIG_EFI_VARIABLE_FILE_STORE=y
-      CONFIG_EFI_GET_TIME=y
-      CONFIG_EFI_RUNTIME_UPDATE_CAPSULE=y
-      CONFIG_EFI_DEVICE_PATH_TO_TEXT=y
-      CONFIG_EFI_UNICODE_COLLATION_PROTOCOL2=y
-      CONFIG_EFI_LOADER_HII=y
-    '';
+
     
-    # Install both traditional and EFI versions
-    filesToInstall = [ "u-boot.bin" "u-boot.efi" ];
+    # Install file
+    filesToInstall = [ "u-boot.bin" ];
     
-    # Build EFI version
-    postBuild = ''
-      make u-boot.efi
-    '';
+
   };
 
 
