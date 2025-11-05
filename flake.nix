@@ -221,19 +221,55 @@
       };
 
       custom-user-config = ({ config, pkgs, lib, nixos-raspberrypi, ... }: {
+        users.users.david.isNormalUser = true;
+        users.users.david.openssh.authorizedKeys.keys = [
+         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAOr7hdJO0P2TBs5GH+XmOi7XoBT6LiAS7Ym6IEgM2H0 david@alpakapro"
 
-        users.users.nixos.openssh.authorizedKeys.keys = [
-          # YOUR SSH PUB KEY HERE #
-          
         ];
         users.users.root.openssh.authorizedKeys.keys = [
-          # YOUR SSH PUB KEY HERE #
+         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAOr7hdJO0P2TBs5GH+XmOi7XoBT6LiAS7Ym6IEgM2H0 david@alpakapro"
           
         ];
+
 
         environment.systemPackages = with pkgs; [
           tree
+          helix
         ];
+        services.tailscale = {
+          enable = true;
+          useRoutingFeatures = "server";
+        };
+        # ...
+
+      # create a oneshot job to authenticate to Tailscale
+      systemd.services.tailscale-autoconnect = {
+        description = "Automatic connection to Tailscale";
+
+        # make sure tailscale is running before trying to connect to tailscale
+        after = [ "network-pre.target" "tailscale.service" ];
+        wants = [ "network-pre.target" "tailscale.service" ];
+        wantedBy = [ "multi-user.target" ];
+
+        # set this service as a oneshot job
+        serviceConfig.Type = "oneshot";
+
+        # have the job run this shell script
+        script = with pkgs; ''
+          # wait for tailscaled to settle
+          sleep 2
+
+          # check if we are already authenticated to tailscale
+          status="$(${tailscale}/bin/tailscale status -json | ${jq}/bin/jq -r .BackendState)"
+          if [ $status = "Running" ]; then # if so, then do nothing
+            exit 0
+          fi
+
+          # otherwise authenticate with tailscale
+          ${tailscale}/bin/tailscale up -authkey tskey-auth-kG8t7t9uaS11CNTRL-suzKsqMsE9cu789pQ56S9cJekMUEcbitM
+        '';
+      };
+
 
         system.nixos.tags = let
           cfg = config.boot.loader.raspberryPi;

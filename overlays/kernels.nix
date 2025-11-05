@@ -62,6 +62,7 @@ let
         # override what nixos sets in `linux/kernel/preempt.common-config.nix`
         PREEMPT_VOLUNTARY = mkKernelOverride no;
         ARM64_16K_PAGES = no;
+        ARM64_4K_PAGES = yes;
       };
       in {
       bcm2711.aarch64 = common // {
