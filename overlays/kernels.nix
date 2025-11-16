@@ -63,6 +63,10 @@ let
         PREEMPT_VOLUNTARY = mkKernelOverride no;
         ARM64_16K_PAGES = no;
         ARM64_4K_PAGES = yes;
+        CONFIG_COMPAT                     = yes;  # 32-bit syscall emulation
+        CONFIG_COMPAT_32BIT_TIME          = yes;
+        CONFIG_ARM64_ILP32                = no;   # must be *off* for normal armhf
+        CONFIG_VDSO_COMPAT                = yes;
       };
       in {
       bcm2711.aarch64 = common // {
