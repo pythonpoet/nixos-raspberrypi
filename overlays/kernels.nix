@@ -59,14 +59,7 @@ let
         NET_CLS_BPF = mkKernelOverride yes ; # =module in nixos;
 
         PREEMPT = mkKernelOverride yes;
-        # override what nixos sets in `linux/kernel/preempt.common-config.nix`
-        PREEMPT_VOLUNTARY = mkKernelOverride no;
-        ARM64_16K_PAGES = mkKernelOverride no;
-        ARM64_4K_PAGES = mkKernelOverride yes;
-        COMPAT = mkKernelOverride yes;
-        COMPAT_32BIT_TIME = mkKernelOverride yes;
-        ARM64_ILP32 = mkKernelOverride no;
-        VDSO_COMPAT = mkKernelOverride yes;
+
       };
       in {
       bcm2711.aarch64 = common // {
@@ -74,6 +67,14 @@ let
       };
       bcm2712.aarch64 = common // {
         # LOCALVERSION = "-v8-16k" ; # ="" in nixos;
+                # override what nixos sets in `linux/kernel/preempt.common-config.nix`
+        PREEMPT_VOLUNTARY = mkKernelOverride no;
+        ARM64_16K_PAGES = mkKernelOverride no;
+        ARM64_4K_PAGES = mkKernelOverride yes;
+        COMPAT = mkKernelOverride yes;
+        COMPAT_32BIT_TIME = mkKernelOverride yes;
+        ARM64_ILP32 = mkKernelOverride no;
+        VDSO_COMPAT = mkKernelOverride yes;
       };
     };
   };
