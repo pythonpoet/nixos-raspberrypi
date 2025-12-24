@@ -61,7 +61,7 @@ let
         PREEMPT = mkKernelOverride yes;
 
       };
-      in {
+      in with pkgs.lib.kernel; {
       bcm2711.aarch64 = common // {
         # LOCALVERSION = "-v8" ; # ="" in nixos;
       };
