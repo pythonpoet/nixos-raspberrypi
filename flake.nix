@@ -15,8 +15,8 @@
     # use fork to allow disabling modules introduced by mkRemovedOptionModule
     # and similar functions
     # see PR nixos:nixpkgs#398456 (https://github.com/NixOS/nixpkgs/pull/398456)
-    nixpkgs.url = "github:nvmd/nixpkgs/modules-with-keys-25.05";
-    # nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    #nixpkgs.url = "github:nvmd/nixpkgs/modules-with-keys-25.05";
+     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     argononed = {
       # url = "git+file:../argononed?shallow=1";
@@ -266,7 +266,7 @@
           fi
 
           # otherwise authenticate with tailscale
-          ${tailscale}/bin/tailscale up -authkey tskey-auth-kG8t7t9uaS11CNTRL-suzKsqMsE9cu789pQ56S9cJekMUEcbitM
+          ${tailscale}/bin/tailscale up --auth-key=tskey-auth-kQw2UkgLiz11CNTRL-9tSwbv9Rdf1sC3MKwJaff1tKCQ2NiGYEZ
         '';
       };
 

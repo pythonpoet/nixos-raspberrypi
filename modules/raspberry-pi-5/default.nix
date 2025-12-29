@@ -5,7 +5,7 @@
 
   boot.loader.raspberryPi = {
     variant = "5";
-    bootloader = lib.mkDefault "kernelboot";
+    bootloader = lib.mkDefault "kernel";
     firmwarePackage = lib.mkDefault self.packages.${pkgs.hostPlatform.system}.raspberrypifw;
   };
 
