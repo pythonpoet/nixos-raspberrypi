@@ -102,4 +102,4 @@ in
     overlaySrcDir="$srcs/arch/${armArch}/boot/dts/overlays"
     cp "$overlaySrcDir/README" "$out/dtbs/overlays/"
   '';
-})
+}
