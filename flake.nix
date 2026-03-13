@@ -12,11 +12,7 @@
   };
 
   inputs = {
-    # use fork to allow disabling modules introduced by mkRemovedOptionModule
-    # and similar functions
-    # see PR nixos:nixpkgs#398456 (https://github.com/NixOS/nixpkgs/pull/398456)
-    nixpkgs.url = "github:pythonpoet/nixpkgs/master";
-    #nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
 
     argononed = {
       # url = "git+file:../argononed?shallow=1";
@@ -32,6 +28,8 @@
       inputs.nixos-stable.follows = "nixpkgs";
       inputs.nixos-unstable.follows = "nixpkgs";
     };
+
+    flake-compat.url = "github:edolstra/flake-compat";
   };
 
   outputs = { self, nixpkgs, argononed, nixos-images, ... }@inputs: let
@@ -75,15 +73,10 @@
 
     nixosModules = {
       trusted-nix-caches = import ./modules/trusted-nix-caches.nix;
-      nixpkgs-rpi = { config, lib, pkgs, ... }: import ./modules/nixpkgs-rpi.nix {
-        inherit config lib pkgs self;
-      };
+      nixpkgs-rpi = import ./modules/nixpkgs-rpi.nix;
 
       bootloader = import ./modules/system/boot/loader/raspberrypi;
-      # default = import ./modules/raspberrypi.nix;
-      default = { config, lib, pkgs, ... }: import ./modules/raspberrypi.nix {
-        inherit config lib pkgs self;
-      };
+      default = import ./modules/raspberrypi.nix;
 
       sd-image = import ./modules/installer/sd-card/sd-image-raspberrypi.nix;
 
@@ -92,21 +85,15 @@
       usb-gadget-ethernet = import ./modules/usb-gadget-ethernet.nix;
 
       raspberry-pi-5 = {
-        base = { config, lib, pkgs, ... }: import ./modules/raspberry-pi-5 {
-          inherit config lib pkgs self;
-        };
+        base = import ./modules/raspberry-pi-5;
         display-vc4 = import ./modules/display-vc4.nix;
         display-rp1 = import ./modules/raspberry-pi-5/display-rp1.nix;
         bluetooth = import ./modules/bluetooth.nix;
-        page-size-16k = { config, lib, pkgs, ... }: import ./modules/raspberry-pi-5/page-size-16k.nix {
-          inherit config lib pkgs self;
-        };
+        page-size-16k = import ./modules/raspberry-pi-5/page-size-16k.nix;
       };
 
       raspberry-pi-4 = {
-        base = { config, lib, pkgs, ... }: import ./modules/raspberry-pi-4.nix {
-          inherit config lib pkgs self;
-        };
+        base = import ./modules/raspberry-pi-4.nix;
         display-vc4 = import ./modules/display-vc4.nix;
         bluetooth = import ./modules/bluetooth.nix;
         # work-in-progress, untested
@@ -114,15 +101,11 @@
       };
 
       raspberry-pi-3 = {
-        base = { config, lib, pkgs, ... }: import ./modules/raspberry-pi-3.nix {
-          inherit config lib pkgs self;
-        };
+        base = import ./modules/raspberry-pi-3.nix;
       };
 
       raspberry-pi-02 = {
-        base = { config, lib, pkgs, ... }: import ./modules/raspberry-pi-02.nix {
-          inherit config lib pkgs self;
-        };
+        base = import ./modules/raspberry-pi-02.nix;
         display-vc4 = import ./modules/display-vc4.nix;
         bluetooth = import ./modules/bluetooth.nix;
       };
@@ -154,7 +137,6 @@
       pkgs = self.legacyPackages.${system};
     in {
       ffmpeg_4 = pkgs.ffmpeg_4;
-      ffmpeg_5 = pkgs.ffmpeg_5;
       ffmpeg_6 = pkgs.ffmpeg_6;
       ffmpeg_7 = pkgs.ffmpeg_7;
       ffmpeg_7-headless = pkgs.ffmpeg_7-headless;
@@ -214,23 +196,22 @@
             ];
             # nixos-images sets this with `mkForce`, thus `mkOverride 40`
             image.baseName = let
-              cfg = config.boot.loader.raspberryPi;
+              cfg = config.boot.loader.raspberry-pi;
             in lib.mkOverride 40 "nixos-installer-rpi${cfg.variant}-${cfg.bootloader}";
           })
         ] ++ modules;
       };
 
       custom-user-config = ({ config, pkgs, lib, nixos-raspberrypi, ... }: {
-        users.users.david.isNormalUser = true;
-        users.users.david.openssh.authorizedKeys.keys = [
-         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAOr7hdJO0P2TBs5GH+XmOi7XoBT6LiAS7Ym6IEgM2H0 david@alpakapro"
 
-        ];
-        users.users.root.openssh.authorizedKeys.keys = [
-         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAOr7hdJO0P2TBs5GH+XmOi7XoBT6LiAS7Ym6IEgM2H0 david@alpakapro"
+        users.users.nixos.openssh.authorizedKeys.keys = [
+          # YOUR SSH PUB KEY HERE #
           
         ];
-
+        users.users.root.openssh.authorizedKeys.keys = [
+          # YOUR SSH PUB KEY HERE #
+          
+        ];
 
         environment.systemPackages = with pkgs; [
           tree
@@ -272,7 +253,7 @@
 
 
         system.nixos.tags = let
-          cfg = config.boot.loader.raspberryPi;
+          cfg = config.boot.loader.raspberry-pi;
         in [
           "raspberry-pi-${cfg.variant}"
           cfg.bootloader

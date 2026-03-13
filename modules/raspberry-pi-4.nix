@@ -1,16 +1,16 @@
-{ self, config, lib, pkgs, ... }:
+{ nixos-raspberrypi, lib, pkgs, ... }:
 
 {
   imports = [ ./raspberrypi.nix ];
 
-  boot.loader.raspberryPi = {
+  boot.loader.raspberry-pi = {
     variant = "4";
-    bootloader = lib.mkDefault "kernel";
-    firmwarePackage = lib.mkDefault self.packages.${pkgs.hostPlatform.system}.raspberrypifw;
+    bootloader = lib.mkDefault "uboot";
+    firmwarePackage = lib.mkDefault nixos-raspberrypi.packages.${pkgs.stdenv.hostPlatform.system}.raspberrypifw;
   };
 
-  boot.kernelPackages = lib.mkDefault self.packages.${pkgs.hostPlatform.system}.linuxPackages_rpi4;
+  boot.kernelPackages = lib.mkDefault nixos-raspberrypi.packages.${pkgs.stdenv.hostPlatform.system}.linuxPackages_rpi4;
   boot.initrd.availableKernelModules = [
-    "nvme"  # cm4 may have nvme drive connected with pcie
+    "nvme" # cm4 may have nvme drive connected with pcie
   ];
 }

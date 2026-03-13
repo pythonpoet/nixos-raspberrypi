@@ -26,6 +26,7 @@ let
   in {
     # matching first on arch, and the on the board model to easier handle 
     # unsupported (arch,board) combinations
+    # https://www.raspberrypi.com/documentation/computers/linux_kernel.html#native-build-configuration
     armv6l = {
       "0" = mkConfig "bcmrpi";
       "1" = mkConfig "bcmrpi";
@@ -44,7 +45,7 @@ let
     };
   }.${arch}.${rpiModel};
 in
-lib.overrideDerivation (buildLinux (args // rec {
+(buildLinux (args // rec {
   version = "${modDirVersion}-${tag}";
   inherit modDirVersion;
   pname = "linux_rpi-${builtins.elemAt (lib.splitString "_" defconfig) 0}";
@@ -74,7 +75,7 @@ lib.overrideDerivation (buildLinux (args // rec {
 
   ignoreConfigErrors = true;
 
-} // (args.argsOverride or {}))) (oldAttrs: {
+} // (args.argsOverride or {}))).overrideAttrs {
   postConfigure = ''
     # The v7 defconfig has this set to '-v7' which screws up our modDirVersion.
     sed -i $buildRoot/.config -e 's/^CONFIG_LOCALVERSION=.*/CONFIG_LOCALVERSION=""/'

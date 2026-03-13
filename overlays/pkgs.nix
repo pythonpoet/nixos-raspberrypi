@@ -4,9 +4,11 @@ self: super: { # final: prev:
   ffmpeg-headless = self.ffmpeg_7-headless;
   ffmpeg-full = self.ffmpeg_7-full;
 
-  ffmpeg_4 = (super.callPackage ../pkgs/ffmpeg_4-rpi.nix {
-    ffmpeg = super.ffmpeg;
-  }); # small
+  ffmpeg_4 = (
+    super.callPackage ../pkgs/ffmpeg_4-rpi.nix {
+      ffmpeg = super.ffmpeg_4;
+    }
+  ); # small
   ffmpeg_4-headless = self.ffmpeg_4.override {
     ffmpegVariant = "headless";
   };
@@ -14,19 +16,11 @@ self: super: { # final: prev:
     ffmpegVariant = "full";
   };
 
-  ffmpeg_5 = (super.callPackage ../pkgs/ffmpeg_5-rpi.nix {
-    ffmpeg = super.ffmpeg;
-  }); # small
-  ffmpeg_5-headless = self.ffmpeg_5.override {
-    ffmpegVariant = "headless";
-  };
-  ffmpeg_5-full = self.ffmpeg_5.override {
-    ffmpegVariant = "full";
-  };
-
-  ffmpeg_6 = (super.callPackage ../pkgs/ffmpeg_6-rpi.nix {
-    ffmpeg = super.ffmpeg;
-  }); # small
+  ffmpeg_6 = (
+    super.callPackage ../pkgs/ffmpeg_6-rpi.nix {
+      ffmpeg = super.ffmpeg_6;
+    }
+  ); # small
   ffmpeg_6-headless = self.ffmpeg_6.override {
     ffmpegVariant = "headless";
   };
@@ -34,9 +28,11 @@ self: super: { # final: prev:
     ffmpegVariant = "full";
   };
 
-  ffmpeg_7 = (super.callPackage ../pkgs/ffmpeg_7-rpi.nix {
-    ffmpeg = super.ffmpeg;
-  }); # small
+  ffmpeg_7 = (
+    super.callPackage ../pkgs/ffmpeg_7-rpi.nix {
+      ffmpeg = super.ffmpeg_7;
+    }
+  ); # small
   ffmpeg_7-headless = self.ffmpeg_7.override {
     ffmpegVariant = "headless";
   };
@@ -85,13 +81,13 @@ self: super: { # final: prev:
 
   libcamera_rpi = super.libcamera.overrideAttrs (old: rec {
     pname = old.pname + "-rpi";
-    version = "0.5.2+rpt20250903";
+    version = "0.6.0+rpt20251202";
 
     src = super.fetchFromGitHub {
       owner = "raspberrypi";
       repo = "libcamera";
       rev = "v${version}";
-      hash = "sha256-4rNV9TMDvVpMBmgeRftO51ptOyHh4QOgoyZ6F/Iwdnw";
+      hash = "sha256-sJKzmeeXD/66P5o+X9w3J2gwxDNsdBUdXEqU6goJdN4=";
     };
 
     mesonFlags = old.mesonFlags ++ [
@@ -103,6 +99,7 @@ self: super: { # final: prev:
       "-Dtest=false"
       "-Dcam=disabled"
       "-Dpycamera=enabled"
+      (super.lib.mesonEnable "libunwind" false)
     ];
 
     meta = old.meta // {
@@ -113,14 +110,14 @@ self: super: { # final: prev:
 
   vlc = super.vlc.overrideAttrs (old: {
     pname = old.pname + "-rpi";
-    version = "3.0.21-0+rpt5";
+    version = "3.0.22-0+rpt1";
 
-    # https://github.com/RPi-Distro/vlc/commits/bookworm-rpt/
+    # https://github.com/RPi-Distro/vlc/commits/pios/trixie
     src = super.fetchFromGitHub {
       owner = "RPi-Distro";
       repo = "vlc";
-      rev = "dad001256a4fbd50c6691e6bf094758f48dc8b61";
-      hash = "sha256-UhY0Q/19ZL7CaX5R7t23SSntP1OXctT+8Afy/bSy3bk";
+      rev = "1e4f72f9f7af4de546c90062c248f6174af69f28";
+      hash = "sha256-uuCRpv+tZ63KGOQJ9eejx7WNfzWpTAMkxoLGQNj0og0=";
     };
   });
 
