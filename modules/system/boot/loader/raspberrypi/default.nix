@@ -1,9 +1,7 @@
 { config, lib, pkgs, ... }:
 
-with lib;
-
 let
-  cfg = config.boot.loader.raspberryPi;
+  cfg = config.boot.loader.raspberry-pi;
   isAarch64 = pkgs.stdenv.hostPlatform.isAarch64;
 
   ubootBinName = if isAarch64 then "u-boot-rpi-arm64.bin" else "u-boot-rpi.bin";
@@ -148,12 +146,17 @@ let
   builder = {
     # system.build.installBootLoader
     uboot = "${ubootBuilder} -f ${cfg.firmwarePath} -b ${cfg.bootPath} -c";
-    kernelboot = builtins.concatStringsSep " " [
+    kernelboot = lib.concatStringsSep " " [
       "${kernelbootBuilder}"
       "-f ${cfg.firmwarePath}"
       "-c"
     ];
-    kernel = builtins.concatStringsSep " " [
+    kernelboot-legacy-unsupported = lib.concatStringsSep " " [
+      "${kernelbootBuilder}"
+      "-f ${cfg.firmwarePath}"
+      "-c"
+    ];
+    kernel = lib.concatStringsSep " " [
       "${mkBootloader pkgs}"
       "-g ${toString cfg.configurationLimit}"
       "-f ${cfg.firmwarePath}"
@@ -172,7 +175,11 @@ let
       firmware = "${populateKernelbootBuilder}";
       boot = "${populateKernelbootBuilder}";
     };
-    kernel = let cmd = builtins.concatStringsSep " " [
+    kernelboot-legacy-unsupported = {
+      firmware = "${populateKernelbootBuilder}";
+      boot = "${populateKernelbootBuilder}";
+    };
+    kernel = let cmd = lib.concatStringsSep " " [
       "${mkBootloader pkgs.buildPackages}"
       "-g ${toString cfg.configurationLimit}"
     ];
@@ -184,28 +191,20 @@ let
 in
 
 {
-  disabledModules = [
-    # the module has been remove in nixpkgs, but that shouldn't prevent us
-    # from using the now free (!) name for our module
-    # mkRemovedOptionModule in `"modulesPath + rename.nix"`, unfortunately,
-    # prevents us from doing so in upstream nixpkgs
-    { key = "removedOptionModule#boot_loader_raspberryPi"; }
-  ];
-
   options = {
 
-    boot.loader.raspberryPi = {
-      enable = mkOption {
+    boot.loader.raspberry-pi = {
+      enable = lib.mkOption {
         default = false;
-        type = types.bool;
+        type = lib.types.bool;
         description = ''
           Whether to manage boot firmware, device trees and bootloader
           with this module
         '';
       };
 
-      configTxtPackage = mkOption {
-        type = types.package;
+      configTxtPackage = lib.mkOption {
+        type = lib.types.package;
         default = pkgs.writeTextFile {
           name = "config.txt";
           text = ''
@@ -220,19 +219,19 @@ in
         description = "The `config.txt` package to use.";
       };
 
-      firmwarePackage = mkPackageOption pkgs "raspberrypifw" {
+      firmwarePackage = lib.mkPackageOption pkgs "raspberrypifw" {
         default = "raspberrypifw";
         extraDescription = ''
           This package will be used to:
           - install RaspberryPi firmware a.k.a "boot code" from
           - install device tree files from when
-            `boot.loader.raspberryPi.useGenerationDeviceTree == false`.
+            `boot.loader.raspberry-pi.useGenerationDeviceTree == false`.
         '';
       };
 
-      bootPath = mkOption {
+      bootPath = lib.mkOption {
         default = "/boot";
-        type = types.str;
+        type = lib.types.str;
         description = ''
           Target path for:
           - uboot: extlinux configuration - (extlinux/extlinux.conf, initrd, 
@@ -243,9 +242,9 @@ in
         '';
       };
 
-      firmwarePath = mkOption {
+      firmwarePath = lib.mkOption {
         default = "/boot/firmware";
-        type = types.str;
+        type = lib.types.str;
         description = ''
           Target path for system firmware (DTBs, etc.) and:
           - kernel: system generations,
@@ -257,15 +256,15 @@ in
         '';
       };
 
-      useGenerationDeviceTree = mkOption {
+      useGenerationDeviceTree = lib.mkOption {
         default = if cfg.bootloader == "kernel" then true
                   else false;  # generic-extlinux-compatible defaults to `true`
-        type = types.bool;
+        type = lib.types.bool;
         description = ''
           Whether to use device tree supplied by:
           - the generation's kernel (when `true`)
           - or from the vendor's firmware package set with
-            `boot.loader.raspberryPi.firmwarePackage` (when `false`)
+            `boot.loader.raspberry-pi.firmwarePackage` (when `false`)
 
           `kernelboot` (legacy), `uboot`: Note that this affects all generations,
             regardless of the setting value used in their configurations because
@@ -274,8 +273,8 @@ in
         '';
       };
 
-      firmwarePopulateCmd = mkOption {
-        type = types.str;
+      firmwarePopulateCmd = lib.mkOption {
+        type = lib.types.str;
         readOnly = true;
         description = ''
           Contains the builder command used to populate image of the firmware partition.
@@ -292,8 +291,8 @@ in
         '';
       };
 
-      bootPopulateCmd = mkOption {
-        type = types.str;
+      bootPopulateCmd = lib.mkOption {
+        type = lib.types.str;
         readOnly = true;
         description = ''
           Contains the builder command used to populate /boot
@@ -309,9 +308,9 @@ in
         '';
       };
 
-      bootloader = mkOption {
+      bootloader = lib.mkOption {
         default = if cfg.variant == "5" then "kernelboot" else "uboot";
-        type = types.enum [ "kernel" "kernelboot" "uboot" ];
+        type = lib.types.enum [ "kernel" "uboot" "kernelboot" "kernelboot-legacy-unsupported" ];
         description = ''
           Bootloader to use:
           - `"uboot"`: U-Boot
@@ -324,19 +323,19 @@ in
         '';
       };
 
-      nixosGenerationsDir = mkOption {
+      nixosGenerationsDir = lib.mkOption {
         default = "nixos";
-        type = types.str;
+        type = lib.types.str;
         description = ''
           Used only by `kernel` bootloader!
           Directory for nixos generations inside `firmwarePath`.
         '';
       };
 
-      configurationLimit = mkOption {
+      configurationLimit = lib.mkOption {
         default = 4;
         example = 10;
-        type = types.int;
+        type = lib.types.int;
         description = ''
           Used only by `kernel` bootloader!
 
@@ -357,12 +356,12 @@ in
         '';
       };
 
-      variant = mkOption {
-        type = types.enum [ "0" "02" "1" "2" "3" "4" "5" ];
+      variant = lib.mkOption {
+        type = lib.types.enum [ "0" "02" "1" "2" "3" "4" "5" ];
         description = "";
       };
 
-      ubootPackage = mkOption {
+      ubootPackage = lib.mkOption {
         default = {
           "0" = {
             armhf = pkgs.ubootRaspberryPiZero;
@@ -392,24 +391,42 @@ in
     };
   };
 
-  config = mkMerge [
-    (mkIf cfg.enable {
+  config = lib.mkMerge [
+    (lib.mkIf cfg.enable {
+      warnings =
+        lib.optional (cfg.bootloader == "kernelboot") ''
+          RaspberryPi bootloader: "kernelboot" is deprecated, please migrate to "kernel"
+
+          You're using boot.loader.raspberry-pi.bootloader = "${config.boot.loader.raspberry-pi.bootloader}",
+          which is deprecated and will be removed in the future versions of nixos-raspberrypi.
+          Please migrate to `kernel` bootloader, which provides many advantages over the legacy `kernelboot`.
+          See [PR#61](https://github.com/nvmd/nixos-raspberrypi/pull/61) for more information.
+
+          If you still want to keep the behavior of the old bootloader,
+          please let us know about your usecase and enforce it explicitly with
+          `boot.loader.raspberry-pi.bootloader = "kernelboot-legacy-unsupported"` in your configuration.
+
+          This will ensure that your bootloader stays "kernelboot" even when the default booloader
+          will be changed to "kernel" (for selected boards currently using "kernelboot").
+          The "-legacy-unsupported" suffix will silence this warning until the final deletion.
+        '';
+
       assertions = let
         supportAarch64 = [ "02" "3" "4" "5" ];
-      in singleton {
+      in [{
         assertion = !pkgs.stdenv.hostPlatform.isAarch64
-                    || builtins.elem cfg.variant supportAarch64;
+                    || lib.elem cfg.variant supportAarch64;
         message = ''
           Only Raspberry Pi versions
-          ${builtins.concatStringsSep ", " supportAarch64} support aarch64.
+          ${lib.concatStringsSep ", " supportAarch64} support aarch64.
         '';
-      };
+      }];
       boot.loader.grub.enable = false;
-      boot.loader.raspberryPi.firmwarePopulateCmd = populateCmds.${cfg.bootloader}.firmware;
-      boot.loader.raspberryPi.bootPopulateCmd = populateCmds.${cfg.bootloader}.boot;
+      boot.loader.raspberry-pi.firmwarePopulateCmd = populateCmds.${cfg.bootloader}.firmware;
+      boot.loader.raspberry-pi.bootPopulateCmd = populateCmds.${cfg.bootloader}.boot;
     })
 
-    (mkIf (cfg.enable && (cfg.bootloader == "kernel")) {
+    (lib.mkIf (cfg.enable && (cfg.bootloader == "kernel")) {
       hardware.raspberry-pi.config = {
         all = {
           options = {
@@ -431,7 +448,7 @@ in
       };
     })
 
-    (mkIf (cfg.enable && (builtins.elem cfg.bootloader [ "kernelboot" "kernel" ])) {
+    (lib.mkIf (cfg.enable && (lib.elem cfg.bootloader [ "kernel" "kernelboot" "kernelboot-legacy-unsupported" ])) {
       hardware.raspberry-pi.config = {
         all = {
           options = {
@@ -460,7 +477,7 @@ in
       };
     })
 
-    (mkIf (cfg.enable && (cfg.bootloader == "uboot")) {
+    (lib.mkIf (cfg.enable && (cfg.bootloader == "uboot")) {
       hardware.raspberry-pi.config = {
         all = {
           options = {
